@@ -1,0 +1,98 @@
+applicationContext: 接口类型，代表应用上下文，可以通过其实例获得Spring容器中的Bean对象
+
+
+
+
+ClassPathXmlApplicationContext          它是从类的根路径下加载配置文件推荐使用这种
+FileSystemXmlApplicationContext         它是从磁盘路径上加载配置文件，配置文件可以在磁盘的任意位置。
+AnnotationConfigApplicationContext      当使用注解配置容器对象时，需要使用此类来创建spring容器。它用来读取注解。
+
+
+
+getBean()方法使用:
+
+public object getBean (String name)throws BeansException {
+  assertBeanFactoryActive() ;
+  return getBeanFactory().getBean(name) ;
+}
+
+代码：
+  UserService userService = (UserService) app.getBean("userService");
+
+
+
+
+public <T> T getBean(Class<T> requiredType) throws BeansException {
+  assertBeanFactoryActive();
+  return getBeanFactory().getBean(requiredType) ;
+}
+
+代码：
+  UserService userService = app.getBean(UserSrvice.class); //不需要强制转换，但是如果<bean>标签中有多个不同的ID有着相同的class路径，则会报错
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
