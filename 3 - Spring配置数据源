@@ -1,0 +1,228 @@
+数据源（连接池)的作用：
+  数据源(连接池)是提高程序性能如出现的。
+  事先实例化数据源，初始化部分连接资源。
+  使用连接资源时从数据源中获取
+  使用完毕后将连接资源归还给数据源
+  
+常见的数据源(连接池): DBCP、C3PO、BoneCP、Druid等
+
+
+
+
+
+数据源的开发步骤：
+  导入数据源的坐标和数据库驱动坐标
+  创建数据源对象
+  设置数据源的基本连接数据
+  使用数据源获取连接资源和归还连接资源
+
+
+
+代码：
+  
+class文件：
+
+public class DataSource {
+
+    @Test
+    //测试手动创建 c3p0数据库(加载配置文件)
+    public void test3() throws Exception {
+        //读取配置文件
+        ResourceBundle rb = ResourceBundle.getBundle("jdbc");
+        String driver = rb.getString("jdbc.driver");
+        String url = rb.getString("jdbc.url");
+        String username = rb.getString("jdbc.username");
+        String password = rb.getString("jdbc.password");
+
+        //创建数据源对象 设置连接参数
+        ComboPooledDataSource dataSource = new ComboPooledDataSource();
+        dataSource.setDriverClass(driver);
+        dataSource.setJdbcUrl(url);
+        dataSource.setUser(username);
+        dataSource.setPassword(password);
+
+        Connection connection = dataSource.getConnection();
+        System.out.println(connection);
+        connection.close();
+
+    }
+
+
+    @Test
+    //测试手动创建 Druid数据库
+    public void test2() throws Exception {
+        DruidDataSource dataSource = new DruidDataSource();
+        dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
+        dataSource.setUrl("jdbc:mysql://localhost:3306/db1?useSSL=false&serverTimezone=UTC");
+        dataSource.setUsername("root");
+        dataSource.setPassword("1234");
+        DruidPooledConnection connection = dataSource.getConnection();
+        System.out.println(connection);
+        connection.close();
+    }
+
+    @Test
+    //测试手动创建 c3p0数据库
+    public void test1() throws Exception {
+        ComboPooledDataSource dataSource = new ComboPooledDataSource();
+        dataSource.setDriverClass("com.mysql.cj.jdbc.Driver");
+        dataSource.setJdbcUrl("jdbc:mysql://localhost:3306/db1?useSSL=false&serverTimezone=UTC");
+        dataSource.setUser("root");
+        dataSource.setPassword("1234");
+        Connection connection = dataSource.getConnection();
+        System.out.println(connection);
+        connection.close();
+    }
+
+}
+
+
+
+
+配置文件：
+jdbc.driver=com.mysql.cj.jdbc.Driver
+jdbc.url=jdbc:mysql://localhost:3306/db1?useSSL=false&serverTimezone=UTC
+jdbc.username=root
+jdbc.password=1234
+
+
+
+
+
+
+
+Spring配置数据源：
+  可以将DataSource的创建权交由Spring容器去完成
+
+
+
+class文件：
+
+import javax.sql.DataSource;
+import java.sql.Connection;
+
+
+public class DataSourceTest {
+
+    @Test
+    //测试Spring容器产生数据源对象
+    public void test4() throws Exception {
+        ApplicationContext app = new ClassPathXmlApplicationContext("applicationContext.xml");
+        DataSource dataSource =  app.getBean(DataSource.class);
+        Connection connection = dataSource.getConnection();
+        System.out.println(connection);
+        connection.close();
+    }
+}
+
+
+
+applicationContext.xml文件:
+
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="driverClass" value="com.mysql.cj.jdbc.Driver"></property>
+        <property name="jdbcUrl" value="jdbc:mysql://localhost:3306/db1?useSSL=false&amp;serverTimezone=UTC"></property>
+        <property name="user" value="root"></property>
+        <property name="password" value="1234"></property>
+    </bean>
+
+
+
+
+
+
+
+
+优化：（将两个配置分开，做到更好的维护）
+
+抽取jdbc配置文件:
+  applicationContext.xml加载jdbc.properties配置文件获得连接信息。
+  
+首先，需要引入context命名空间和约束路径:
+  命名空间: xmIns:context="http://www.springframework.org/schema/context"
+  约束路径: http://www.springframework.org/schema/context
+            http://www.springframework.org/schema/context/spring-context.xsd
+            
+<context:property-placeholder location="classpath:jdbc.propertie"/>
+<bean id="dataSource" class="com.mahange.v2.c3p0.ComboPooledDataSource">
+  <property name="driverClass" value="${jdbc.driver}"/>
+  <property name="jdbcUrl" value="${jdbc.ur1}"/>
+  <property name="user" value="${jdbc.username }"/>
+  <property name="password" value="${jdbc.password}"/>
+</bean>
+
+
+
+
+
+
+配置文件代码：
+
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation=
+               "http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                http://www.springframework.org/schema/context  http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!--加载外部的properties文件-->
+    <context:property-placeholder location="classpath:jdbc.properties"/>
+
+
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="driverClass" value="${jdbc.driver}"></property>
+        <property name="jdbcUrl" value="${jdbc.url}"></property>
+        <property name="user" value="${jdbc.username}"></property>
+        <property name="password" value="${jdbc.password}"></property>
+    </bean>
+
+</beans>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
