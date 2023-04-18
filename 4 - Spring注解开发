@@ -1,0 +1,225 @@
+Spring原始注解:
+  Spring是轻代码而重配置的框架，配置比较繁重，影响开发效率，所以
+  注解开发是一种趋势,注解代替xml配置,文件可以简化配置，提高开发效率。
+
+
+
+
+Spring原始注解主要是替代<Bean>的配置
+
+注解                                              说明
+@Component                                 使用在类上用于实例化Bean
+@Controller                                使用在web层类上用于实例化Bean
+@Service                                   使用在service层类上用于实例化Bean
+@Repository                                使用在dao层类上用于实例化Bean
+@Autowired                                 使用在字段上用于根据类型依赖注入
+@Qualifier                                 结合@Autowired—起使用用于根据名称进行依赖注入
+@Resource                                  相当于@Autowired+@Qualifier，按照名称进行注入
+@Value                                     注入普通属性
+@Scope                                     标注Bean的作用范围
+@PostConstruct                             使用在方法上标注该方法是Bean的初始化方法
+@PreDestroy                                使用在方法上标注该方法是Bean的销毁方法
+
+
+
+注意:
+使用注解进行开发时，需要在applicationContext.xml中配置组件扫描，作用是指定哪个包及其子包下的Bean需要进行扫描以便识别使用注解配置的类、字段和方法。
+
+<!--注解的组件扫描-->
+<context:component-scan base-package="com.itheima" ></context:component-scan>
+
+
+
+
+
+
+UserDaoimpl.java文件：
+
+@Component("userDao")
+public class UserDaoimpl implements UserDao {
+    public void save(){
+        System.out.println("save running");
+    }
+}
+
+
+
+
+UserServiceImpl.java文件：
+
+@Component("userService")
+public class UserServiceImpl implements UserService {
+
+    //<property name="userDao" ref="userDao"></property>
+    @Autowired
+    @Qualifier("userDao")
+    private UserDao userDao;
+
+    public void setUserDao(UserDao userDao) {
+        this.userDao = userDao;
+    }
+
+    public void save(){
+        userDao.save();
+    }
+}
+
+
+
+UserController.java文件：
+
+public class UserController {
+    public static void main(String[] args) {
+        ApplicationContext app = new ClassPathXmlApplicationContext("applicationContext.xml");
+        UserService userService = app.getBean(UserService.class);
+        userService.save();
+    }
+}
+
+
+
+applicationContext.xml文件：
+
+
+    <!--组件扫描-->
+    <context:component-scan base-package="com.Death"/>
+
+
+
+
+在写代码时应该按照上述注解对Dao、Service、Web等层进行分层，以便提高可读性。
+若是使用原始注解，则可以去掉set方法，因为可以通过反射直接对对相应变量进行赋值
+
+
+@Autowired //按照数据类型从Spring容器中进行匹配的
+@Qualifier("userDao") //是按照id值从容器中进行匹配的但是主要此处@Qualifier结合@Autowired一起使用
+
+若该类只有一个bean，则去掉 @Qualifier 也没关系，但若是有多个，则不行
+
+@Resource(name="userDao") //@Resource相当于@Qualifier+@Autowired
+
+
+
+对于普通变量注解：
+  @Value ("${jdbc.driver}")
+  private String driver;     //更适用这种情况，因为当注解内容过于简单，则不如直接赋初始值
+
+
+
+范围注解（在类上方写）：
+  //@scope("prototype")
+  @Scope("singleton")
+
+
+
+
+
+指定初始化和销毁方法
+
+@PostConstruct
+public void init() {
+  System.out.print ln("Service对象的初始化方法");
+}
+
+@PreDestroy
+public void destory() {
+  System.out.println("Service对象的销毁方法");
+}
+
+
+
+
+
+
+
+
+Spring新注解：
+  使用上面的注解还不能全部替代xml配置文件，还需要使用注解替代的配置如下:
+    非自定义的Bean的配置: <bean>
+    加载properties文件的配置: <context:property-placeholder>
+    组件扫描的配置: <context:component-scan>
+    引入其他文件: <import>
+
+
+
+
+注解                                                                                      说明
+@Configuration                              用于指定当前类是一个Spring 配置类，当创建容器时会从该类上加载注解用于指定Spring在初始化容器时要扫描的包。
+@ComponentScan                              作用和在Spring 的xml配置文件中的<context:component-scan base-package="com.Death"/>一样
+@Bean                                       使用在方法上，标注将该方法的返回值存储到Spring容器中
+@PropertySource                             用于加载.properties文件中的配置
+@Import                                     用于导入其他配置类
+
+
+
+代码：
+
+SpringConfiguration.java文件：
+
+//标志该类是Spring的核心配置类
+@Configuration
+//<context:component-scan base-package="com.Death"/>
+@ComponentScan("com.Death")
+//<import resource=""/>
+@Import({DataSourceConfiguration.class})  //实际上是个数组，只有一个的话{}可以省略
+
+public class SpringConfiguration {
+}
+
+
+
+
+
+
+
+
+DataSourceConfiguration.java文件（方便可读，相当于分文件）：
+
+//<context:property-placeholder location="classpath:jdbc.properties"/>
+@PropertySource("classpath:jdbc.properties")
+public class DataSourceConfiguration {
+
+    @Value("${jdbc.driver}")
+    private String driver;
+    @Value("${jdbc.url}")
+    private String url;
+
+    @Bean("dataSource")    //Spring会将当前方法的返回值以指定名称存储到Spring容器中
+    public DataSource getDataSource() throws Exception {
+        ComboPooledDataSource dataSource = new ComboPooledDataSource();
+        dataSource.setDriverClass(driver);
+        dataSource.setJdbcUrl(url);
+        dataSource.setUser("root");
+        dataSource.setPassword("1234");
+        return dataSource;
+    }
+
+}
+
+
+
+
+UserController.java文件：
+
+public class UserController {
+    public static void main(String[] args) {
+        //ApplicationContext app = new ClassPathXmlApplicationContext("applicationContext.xml");
+        ApplicationContext app = new AnnotationConfigApplicationContext(SpringConfiguration.class);
+        UserService userService = app.getBean(UserService.class);
+        userService.save();
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
