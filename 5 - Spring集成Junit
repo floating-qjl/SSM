@@ -1,0 +1,92 @@
+
+在测试类中，每个测试方法都有以下两行代码:
+  Applicationcontext ac = new classPathXmlApplicationcontext("bean.xm1");
+  IAccountservice as = ac.getBean("accountservice",IAccountservice.class);
+  
+这两行代码的作用是获取容器，如果不写的话，直接会提示空指针异常。所以又不能轻易删掉。
+
+
+
+
+上述问题解决思路：
+  让SpringJunit负责创建Spring容器，但是需要将配置文件的名称告诉它
+  将需要进行测试Bean直接在测试类中进行注入
+
+
+
+
+
+Spring集成Junit步骤：
+  导入spring集成Junit的坐标
+  使用@Runwith注解替换原来的运行期
+  使用@ContextConfiguration指定配置文件或配置类
+  使用@Autowired注入需要测试的对象
+  创建测试方法进行测试
+
+
+
+测试代码：
+
+@RunWith(SpringJUnit4ClassRunner.class)
+//@ContextConfiguration("classpath:applicationContext.xml")
+@ContextConfiguration(classes = {SpringConfiguration.class})
+public class SpringJunitTest {
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private DataSource dataSource;
+
+    @Test
+    public void test1() throws Exception {
+        userService.save();
+        System.out.println(dataSource.getConnection());
+    }
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
