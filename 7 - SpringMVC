@@ -9,6 +9,16 @@ SpringMVC概述：
 
 
 
+SpringMVC快速入门：
+  需求:客户端发起请求，服务器端接收请求，执行逻辑并进行视图跳转。
+  
+开发步骤:
+  导入SpringMVC相关坐标
+  配置SpringMVC核心控制器DispathcerServlet
+  创建Controller类和视图页面
+  使用注解配置Controller类中业务方法的映射地址
+  配置SpringMVC核心文件spring-mvc.xml
+  客户端发起请求测试
 
 
 
