@@ -24,6 +24,182 @@ SpringMVC快速入门：
 
 
 
+Tomcat引擎:
+  1、接收客户端请求，解析请求资源地址
+  2、创建代表请求req对象
+  3、创建代表响应resp对象
+  4、调用目标资源
+  5、获得resp中的内容，组装成http响应返回客户端
+
+
+
+
+
+代码：
+
+spring-mvc.xml文件：
+
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd ">
+
+    <!--  组件扫描  -->
+    <context:component-scan base-package="com.Death.controller"/>
+
+
+</beans>
+
+
+
+
+
+UserController.java文件：
+
+@Controller
+public class UserController {
+
+
+    @RequestMapping("/quick")
+    public String save(){
+        System.out.println("Controller sava running");
+        return "success.jsp";
+    }
+}
+
+
+
+
+
+
+web.xml文件：
+
+
+    <!--  配置SpringMVC的前端控制器  -->
+    <servlet>
+        <servlet-name>DispatcherServlet</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <param-value>classpath:spring-mvc.xml</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>DispatcherServlet</servlet-name>
+        <url-pattern>/</url-pattern>
+    </servlet-mapping>
+
+
+
+
+
+
+success.jsp文件：
+
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+<head>
+    <title>Title</title>
+</head>
+<body>
+
+    <h1>Success!</h1>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+SpringMVC组件解析：
+
+SpringMVC的执行流程：
+  用户发送请求至前端控制器DispatcherServlet。
+  DispatcherServlet收到请求调用HandlerMapping处理器映射器。
+  处理器映射器找到具体的处理器(可以根据xml配置、注解进行查找)，生成处理器对象及处理器拦截器(如果有则生成)一并返回给DispatcherServlet。
+  DispatcherServlet调用HandlerAdapter处理器适配器。
+  HandlerAdapter经过适配调用具体的处理器(Controller，t也叫后端控制器)。
+  Controller执行完成返回ModelAndView。
+  HandlerAdapter将controller执行结果ModelAndView返回给DispatcherServlet。
+  DispatcherServlet将ModelAndView传给ViewReslover视图解析器。
+  ViewReslover解析后返回具体View。
+  DispatcherServlet根据View进行渲染视图(即将模型数据填充至视图中)。DispatcherServlet响应用户。
+
+
+
+
+
+
+
+
+
+SpringMVC注解解析：
+
+RequestMapping
+  作用: 用于建立请求URL和处理请求方法之间的对应关系
+  位置:
+    类上，请求URL的第一级访问目录。此处不写的话，就相当于应用的根目录
+    方法上，请求URL的第二级访问目录，与类上的使用@ReqquestMapping标注的一级目录一起组成访问虚拟路径
+  属性:
+    value: 用于指定请求的URL。它和path属性的作用是一样的
+    method: 用于指定请求的方式
+    params: 用于指定限制请求参数的条件。它支持简单的表达式。要求请求参数的key和value必须和配置的一模一样
+  例如:
+    params = {"accountName"}，表示请求参数必须有accountName
+    params = {"moeny!100"}，表示请求参数中money不能是100
+
+
+
+
+
+SpringMVC注解解析：
+
+  1. mvc命名空间引入
+    命名空间: xmlns:context="http://www.springframework.org/schema/context"
+              xmlns:mvc="http://www.springframework.org/schema/mvc"
+    约束地址: http://www.springframework.org/schema/context
+              http://www.springframework.org/schema/context/spring-context.xsd
+              http://www.springframework.org/schema/mvc
+              http://www.springframework.org/schema/mvc/spring-mvc.xsd
+  2. 组件扫描
+    SpringMvc基于spring容器，所以在进行springMvc操作时，需要将controller存储到spring容器中，如果使用@controller注解标注的话，
+    就需要使用<context:component-scan base-package="com.itheima.controller"/>进行组件扫描。
+
+另一种组件扫描写法：
+
+    <!--  组件扫描  -->
+    <context:component-scan base-package="com.Death">
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
