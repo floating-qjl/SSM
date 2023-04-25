@@ -186,10 +186,48 @@ SpringMVC注解解析：
 
 
 
+视图解析器:
+
+SpringMVC有默认组件配置，默认组件都是DispatcherServlet.properties配置文件中配置的，该配置文件地址
+org/springframework/web/servlet/DispatcherServlet.properties，该文件中配置了默认的视图解析器，
+如下:
+  org.springframework.web.servlet.ViewResolver=org.springframework.web.servlet.view.InternalResourceViewResolver
+  
+翻看该解析器源码，可以看到该解析器的默认设置，如下:
+
+  REDIRECT_URL_PREFI= "redirect:" --重定向前缀
+  FORWARD_URL_PREFI= "forward:" --转发前缀（默认值)
+  prefix = ""; --视图名称前缀
+  suffix = ""; --视图名称后缀
 
 
 
 
+代码：
+
+    <!-- 配置内部资源视图解析器 -->
+    <bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <!-- /jsp/success.jsp  -->
+        <property name="prefix" value="/jsp/"></property>
+        <property name="suffix" value=".jsp"></property>
+    </bean>
+    
+    
+    
+    
+UserController.java文件：
+
+
+@Controller
+public class UserController {
+
+
+    @RequestMapping("/quick")
+    public String save(){
+        System.out.println("Controller sava running");
+        return "success";
+    }
+}
 
 
 
