@@ -232,6 +232,23 @@ public class UserController {
 
 
 
+知识要点：
+
+SpringMVC的相关组件
+  前端控制器: DispatcherServlet
+  处理器映射器: HandlerMapping
+  处理器适配器: HandlerAdapter
+  处理器: Handler
+  视图解析器: View Resolver
+  视图: View
+  
+SpringMVC的注解和配置
+  请求映射注解: @RequestMapping
+  视图解析器配置:
+    REDIRECT_URL_PREFIX = "redirect:"
+    FORWARD_URL_PREFIX = "forward:"
+    prefix = "";
+    suffix = "";
 
 
 
@@ -241,22 +258,120 @@ public class UserController {
 
 
 
+SpringMVC的数据响应：
+
+
+
+
+SpringMVC的数据响应方式：
+
+  1)页面跳转
+    直接返回字符串
+    通过ModelAndView对象返回
+  2)回写数据
+    直接返回字符串
+    返回对象或集合
+
+
+
+
+页面跳转：
+1. 返回字符串形式
+   直接返回字符串: 此种方式会将返回的字符串与视图解析器的前后缀拼接后跳转。
+    RequestMapping ("/quick")                                     <property name="prefix" value="/WEB-INF/views/" />
+    public string quickMethod ( ) {                               <property name="suffix" value=".jsp" />
+       return  "index";
+    }
+
+                                   转发资源地址:/WEB-INF/views/index.jsp
+                                   
+返回带有前缀的字符串:
+  转发: forward:/WEB-INE/views/index.jsp
+  重定向: redirect:/index.jsp
+
+
+
+2. 通过ModelAndView对象返回
+
+代码：
+    @RequestMapping("/quick5")
+    public String save5(HttpServletRequest request){
+        //此方式不常用，尽量使用框架提供的对象，该request由JSP创建，会增加耦合
+        request.setAttribute("username","666");
+        return "success";
+    }
+
+    @RequestMapping("/quick4")
+    public String save4(Model model){
+        model.addAttribute("username","sb");
+        return "success";
+    }
+
+    @RequestMapping("/quick3")
+    public ModelAndView save3(ModelAndView modelAndView){
+        //设置模型数据
+        modelAndView.addObject("username","haha");
+        //设置视图名称
+        modelAndView.setViewName("success");
+        return modelAndView;
+    }
+
+
+    @RequestMapping("/quick2")
+    public ModelAndView save2(){
+        //Model:模型 作用封装数据
+        //View: 视图 作用展示数据
+        ModelAndView modelAndView = new ModelAndView();
+        //设置模型数据
+        modelAndView.addObject("username","heihei");
+        //设置视图名称
+        modelAndView.setViewName("success");
+
+        return modelAndView;
+    }
+
+    @RequestMapping("/quick")
+    public String save(){
+        System.out.println("Controller sava running");
+        return "success";
+    }
 
 
 
 
 
 
+回写数据：
+
+1. 直接返回字符串
+
+    Web基础阶段，客户端访问服务器端，如果想直接回写字符串作为响应体返回的话，只需要使用
+    response.getWriter().print(“hello world”)即可，那么在Controller中想直接回写字符串该怎样呢?
+    
+    通过SpringMVC框架注入的response对象，使用response.getWriter().print("hello world")回写数
+    据，此时不需要视图跳转，业务方法返回值为void。
+    
+    RequestMapping ("/quick4")
+    public void quickMethod4(HttpserletResponse response) throws工OException {
+       response.getwriter().print("hello world");
+    }
 
 
 
 
 
+    实际上，也可以像页面跳转一样返回一个字符串，但是StringMVC还没智能到能够分辨String对象到底是跳转还是回写
+    因此可以将需要回写的字符串直接返回，但此时需要通过@ResponseBody注解告知SpringMVC框架，方法返回的字符串不是跳转是直接在http响应体中返回。
+    
+    @RequestMapping("/quick5")
+    @ResponseBody
+    public string quickMethod5 () throws IOException {
+        return "hello springMVC! ! !";
+    }
 
 
 
-
-
+2. 返回对象或集合
 
 
 
