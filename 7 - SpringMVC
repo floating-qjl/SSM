@@ -371,6 +371,73 @@ SpringMVC的数据响应方式：
 
 
 
+
+代码：
+
+    @RequestMapping("/quick9")
+    @ResponseBody   //告知SpringMVC框架 该方法不进行视图跳转 直接进行数据响应
+    public String save9() throws IOException {
+        User user = new User();
+        user.setUsername("lisi");
+        user.setAge(30);
+        //使用json的转换工具将对象转换成json格式字符串再返回
+        ObjectMapper objectMapper = new ObjectMapper();
+        String json = objectMapper.writeValueAsString(user);
+
+        return json;
+    }
+
+    @RequestMapping("/quick8")
+    @ResponseBody   //告知SpringMVC框架 该方法不进行视图跳转 直接进行数据响应
+    public String save8() throws IOException {
+        return "{\"username\":\"zhangsan\",\"age\":18}";
+    }
+
+    @RequestMapping("/quick7")
+    @ResponseBody   //告知SpringMVC框架 该方法不进行视图跳转 直接进行数据响应
+    public String save7() throws IOException {
+        return "hello heihei";
+    }
+
+    @RequestMapping("/quick6")
+    public void save6(HttpServletResponse response) throws IOException {
+        response.getWriter().print("hello heihei");
+    }
+
+
+
+
+json的依赖：
+  
+          <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.9.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.9.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.9.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.9.0</version>
+        </dependency>
+
+
+
+
+
+
 2. 返回对象或集合
 
 
