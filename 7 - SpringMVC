@@ -612,32 +612,64 @@ SpringMVC获得请求数据：
 特殊情况：
   当使用ajax提交时，可以指定contentType为json形式，那么在方法参数位置使用@RequestBody可以直接接收集合数据而无需使用POJO进行包装。
   
-<head>
+
+    @RequestMapping("/quick15")
+    @ResponseBody
+    public void save15(@RequestBody List<User> userList) throws IOException {
+        System.out.println(userList);
+    }
+
+
+    Spring-mvc.xml:
+    
+    //解放权限
+    <mvc:resources mapping="/js/**" location="/js/"></mvc:resources>
+
+
+
+  //导入jQuery包
+  <script>//模拟数据
+    var userList = new Array();
+    userList.push ( {username : "zhangsan" , age: "20" } );
+    userList.push ( {username: "lisi " , age: "20"" } );
+    
+    $.ajax ( {
+      type: "POST" ,
+      url: "/itheima_springmvc1/quick13",
+      data: JSON.stringify ( userList),
+      contentType : ' application/json ;charset=utf-8'
+    });
+  </script>
+
+
+
+  //导入axios包
+  <head>
+    <meta charset="UTF-8">
     <title>Title</title>
+
     <script src="${pageContext.request.contextPath}/js/axios-0.18.0.js"></script>
     <script>
+
         var userList = new Array();
         userList.push({username:"zhangsan",age:18});
         userList.push({username:"lisi",age:66});
 
-        $.ajax({
-            type:"POST",
-            url:"/quick15",
-            data:JSON.stringify(userList),
-            contentType:"application/json;charset=utf-8"
-        })
+        axios({
+            method:"POST",
+            
+            /* headers:{
+                'Content-Type':'application/json;charset=UTF-8'
+            }, */
+            
+            data:userList,
+            url:"${pageContext.request.contextPath}/quick15"
+        }).then(function (resp) {})
     </script>
+
+
+
 </head>
-
-
-
-
-
-
-
-
-
-
 
 
 
