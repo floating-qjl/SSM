@@ -623,7 +623,9 @@ SpringMVC获得请求数据：
     Spring-mvc.xml:
     
     //解放权限
-    <mvc:resources mapping="/js/**" location="/js/"></mvc:resources>
+    <mvc:resources mapping="/js/**" location="/js/"></mvc:resources>   
+    //或者
+    <mvc:default-servlet-handler/>
 
 
 
@@ -677,6 +679,22 @@ SpringMVC获得请求数据：
 
 
 
+请求数据乱码问题:
+  当post请求时，数据会出现乱码，我们可以设置一个过滤器来进行编码的过滤。
+  
+<filter>
+  <filter-name>CharacterEncodingFilter</filter-name>
+  <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+  <init-param>
+    <param-name>encoding</param-name>
+    <param-value>UTF-8</param-value>
+  </init-param>
+</filter>
+
+<filter-mapping>
+  <filter-name>CharacterEncodingFilter</filter-name>
+  <url-pattern>/*</url-pattern>
+</filter-mapping>
 
 
 
@@ -685,6 +703,17 @@ SpringMVC获得请求数据：
 
 
 
+参数绑定注解@requestParam:
+  注解@RequestParam还有如下参数可以使用:
+    value: 与请求参数名称
+    required: 此在指定的请求参数是否必须包括，默认是true，提交时如果没有此参数则报错
+    defaultValue: 当没有指定请求参数时，则使用指定的默认值赋值
+    
+@RequestMapping("/quick14")
+@ResponseBody
+public void quickMethod14(@RequestParam (value="name",required=false, defaultvalue = "itcast" ) string username) throws IOException {
+  System.out.println (username);
+}
 
 
 
