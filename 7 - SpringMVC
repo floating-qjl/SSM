@@ -757,6 +757,140 @@ public void quickMethod19(@Pathvariable (value = "name",required = true) String 
 
 
 
+自定义类型转换器:
+
+SpringMVC默认已经提供了一些常用的类型转换器，例喀户端提交的字符串转换成int型进行参数设置。
+但是不是所有的数据类型都提供了转换器，没有提供的就需要自定义转换器，例如: 日期类型的数据就需要自定义转换器。
+
+自定义类型转换器的开发步骤:
+      定义转换器类实现Converter接口
+      在配置文件中声明转换器
+      在<annotation-driven>中引用转换器
+
+
+例如：
+
+public class DateConverter implements Converter<String,Date> {
+
+    @Override
+    public Date convert(String dateStr) {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        Date date = null;
+        try {
+            date = format.parse(dateStr);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return date;
+    }
+}
+
+
+
+    <bean id="conversionService" class="org.springframework.context.support.ConversionServiceFactoryBean">
+        <property name="converters">
+            <list>
+                <bean class="com.Death.converter.DateConverter"></bean>
+            </list>
+        </property>
+    </bean>
+
+
+
+    <mvc:annotation-driven conversion-service="conversionService"/>
+
+
+
+
+
+
+
+
+获得Servlet相关API：
+
+SpringMVC支持使用原始ServletAPI对象作为控制器方法的参数进行注入，常用的对象如下:
+  HttpServletRequest
+  HttpServletResponse
+  HttpSession
+
+例如：
+@RequestMapping ("/quick16")
+@ResponseBody
+public void quickMethod16(HttpservletRequest request,HttpservletResponseresponse,Httpsession session)
+{
+    System.out.println(request);
+    System.out.println(response);
+    System.out.println(session);
+}
+
+
+
+
+获得请求头:
+
+1.@RequestHeader
+使用@RequestHeader可以获得请求头信息，相当于web阶段学习的request.getHeader(name)
+@RequestHeader注解的属性如下:
+  value: 请求头的名称
+  required: 是否必须携带此请求头
+
+例如：
+@RequestMapping("/quick17")
+@ResponseBody
+public void quickMethod17(@RequestHeader(value = "User-agent",required = false)String headervalue){
+    System.out.println(headervalue);
+}
+
+
+
+
+@CookieValue
+使用@CookieValue可以获得指定Cookie的值
+@CookieValue注解的属性如下:
+  value: 指定cookie的名称
+  required: 是否必须携带此cookie
+
+例如：
+@RequestMapping("/quick18")
+@ResponseBody
+public void quickMethod18 (@Cookievalue(value = "JSESSTONID", required = false) String jsessionid)
+    System.out.println(jsessionid);
+}
+
+
+
+
+
+文件上传
+
+文件上传客户端三要素:
+    表单项type= "file"
+    表单的提交方式是post
+    表单的enctype属性是多部分表单形式，及enctype= "multipart/form-data"
+
+<form action="${pageContext.request.contextPath}/quick20" method="post" enctype="multipart/form-data">
+    名称: <input type="text" name="name"><br>
+    文件: <input type="file" name="file"><br>
+    <input type="submit" value="提交"><br>
+</form>
+
+
+
+
+
+文件上传原理：
+
+当form表单修改为多部分表单时,request.getParameter()将失效。
+enctype= "application/x-www-form-urlencoded”时，form表单的正文内容格式是:key=value&key=value&key=value（键值对）
+当form表单的enctype取值为Mutilpart/form-data时，请求正文内容就变成多部分形式
+
+
+
+
+
+
+
+
 
 
 
