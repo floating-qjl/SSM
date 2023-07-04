@@ -888,6 +888,66 @@ enctype= "application/x-www-form-urlencoded”时，form表单的正文内容格
 
 
 
+单文件上传实现:
+
+1.导入fileupload和io坐标
+<dependency>
+    <groupId>commons-fileupload</groupId>
+    <artifactId>commons-fileupload</artifactid>
+    <version>1.2.2</version>
+</dependency>
+<dependency>
+    <groupId>commons-io</ groupId>
+    <artifactId>commons-io</artifactid>
+    <version>2.4</version>
+</dependency>
+
+
+
+2.配置文件上传解析器
+<bean id="multipartResolver"
+class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+    < ! --上传文件总大小-->
+    <property name="maxUploadsize" value="5242800"/>
+    <!--上传单个文件的大小-->
+    <property name="maxUploadsizePerFile" value="5242800"/>
+    <!--上传文件的编码类型-->
+    <property name="defaultEncoding" value="UTF-8"/>
+</bean>
+
+
+
+3.编写文件上传代码
+@RequestMapping("/quick20")
+@ResponseBody
+public void quickMethod20(String name ,MultipartFile uploadFile) throws工OException {
+    //获得文件名称
+    String originalFilename = uploadFile.getoriginalFilename();
+    //保存文件
+    uploadFile.transferTo(new File("c:\\upload\\"+originalFilename));
+}
+
+
+
+
+
+多文件上传实现：
+
+<form action="${pageContext.request.contextPath}/quick22" method="post" enctype="multipart/form-data">
+    名称：<input type="text" name="username"><br/>
+    文件：<input type="file" name="uploadFile"><br/>
+    文件：<input type="file" name="uploadFile"><br/>
+    <input type="submit" value="提交">
+</form>
+
+
+
+ 
+
+
+
+
+
 
 
 
