@@ -1,0 +1,190 @@
+JdbcTemplate概述
+
+它是spring框架中提供的一个对象，是对原始繁琐的JdbcAPI对象的简单封装。spring框架为我们提供了很多的操作模板类。
+例如:操作关系型数据的JdbcTemplate和HibernateTemplate，操作nosql数据库的RedisTemplate，操作消息队列的JmsTemplate等等。
+
+
+
+JdbcTemplate开发步骤：
+    导入spring-jdbc和spring-tx坐标
+    创建数据库表和实体
+    创建JdbcTemplate对象
+    执行数据库操作
+
+
+代码：
+
+//先建立一个实体类
+//再进行如下代码
+
+public class JdbcTemplateTest {
+
+    @Test
+    public void test1() throws PropertyVetoException {
+        //创建数据源对象
+        ComboPooledDataSource dataSource = new ComboPooledDataSource();
+        dataSource.setDriverClass("com.mysql.cj.jdbc.Driver");
+        dataSource.setJdbcUrl("jdbc:mysql://localhost:3306/test?useSSL=false&serverTimezone=UTC");
+        dataSource.setUser("root");
+        dataSource.setPassword("1234");
+
+        JdbcTemplate jdbcTemplate = new JdbcTemplate();
+        //设置数据源对象：知道数据库在哪
+        jdbcTemplate.setDataSource(dataSource);
+
+        //执行操作
+        int row = jdbcTemplate.update("insert into account values(?,?)", "tom", 5000);
+
+        System.out.println(row);
+
+    }
+}
+
+
+
+
+
+
+Spring产生JdbcTemplate对象：
+
+我们可以将JdbcTemplate的创建权交给Spring，将数据源DataSource的创建权也交给Spring,
+在Spring容器内部将数据源DataSource注入到JdbcTemplate模版对象中，配置如下:
+
+
+<!--数据源Datasource-->
+<bean id="dataSource" class=" com.mchange.v2.c3p0.ComboPooledDataSource">
+    <property name="driverClass" value=" com.mysql.cj.jdbc.Driver"></property>
+    <property name="jdbcUrl" value="jdbc:mysql:///test?serverTimezone=UTC"></property.
+    <property name="user" value="root"></property>
+    <property name="password" value="root"></property>
+</bean>
+
+<! --JdbcTemplate-->
+<bean id="jcbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+    <property name="dataSource" ref="dataSource"></property>
+</bean>
+
+
+
+
+测试：
+
+    @Test
+    //测试产生Spring产生jdbcTemplate对象
+    public void test2() throws PropertyVetoException {
+        ApplicationContext app = new ClassPathXmlApplicationContext("applicationContext.xml");
+        JdbcTemplate jdbcTemplate = app.getBean(JdbcTemplate.class);
+
+        int row = jdbcTemplate.update("insert into account values(?,?)", "zhangsan", 5000);
+
+        System.out.println(row);
+    }
+
+
+
+
+增删改查：
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration("classpath:applicationContext.xml")
+public class JdbcTemplateCRUDTest {
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    //查询数量
+    @Test
+    public void testQueryCount(){
+        Long count = jdbcTemplate.queryForObject("select count(*) from account", Long.class);
+        System.out.println(count);
+    }
+
+    //查询单个数据
+    @Test
+    public void testQueryOne(){
+        Account tom = jdbcTemplate.queryForObject("select * from account where name=?", new BeanPropertyRowMapper<Account>(Account.class), "Tom");
+        System.out.println(tom);
+    }
+    
+    //查询全部
+    @Test
+    public void testQuery(){
+        List<Account> accountList = jdbcTemplate.query("select * from account", new BeanPropertyRowMapper<Account>(Account.class));
+        System.out.println(accountList);
+    }
+
+    //修改数据
+    @Test
+    public void testUpdate(){
+        jdbcTemplate.update("update account set money=? where name=?",10000,"Tom");
+    }
+
+    //删除数据
+    @Test
+    public void testDelete(){
+        jdbcTemplate.update("delete from account where name=?","lisi");
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
