@@ -12,28 +12,117 @@ DI(Dependency Injection)依赖注入
 
 
 
+bean别名配置:
+
+类别           描述
+
+名称           name
+类型           属性
+所属           bean标签
+功能           定义bean的别名，可定义多个，使用逗号(,)分号(;)空格()分隔
+
+范例:
+  <bean id="bookDao" name="dao bookDaoImpl" class="com.itheima.dao.imp1.BookDaoImpl"/>
+  <bean name="service,bookServiceImpl" class="com.itheima.service.impl.BookServiceImpl"/>
+
+注意事项:
+  获取bean无论是通过id还是name获取，如果无法获取到，将抛出异常NoSuchBeanDefinitionException
+  NoSuchBeanDefinitionException: No bean named 'bookServiceImpl' available
+
+
+
+
+bean作用范围配置:
+
+类别            描述
+
+名称            scope
+类型            属性
+所属            bean标签
+
+                定义bean的作用范围，可选范围如下:
+功能            singletpn: 单例（默认)
+                prototype: 非单例
+
+
+范例:
+  <bean id="bookDao" class="com.itheima.dao.impl.BookDaoImpl" scope="prototype"/>
+
+若为非单例，则可控制同一个bean生成的对象是否为同一个
 
 
 
 
 
 
+bean实例化：
+bean本质上就是对象，创建bean使用构造方法完成
+
+
+实例化bean的三种方式——构造方法（常用)：
+
+提供可访问的构造方法:
+  public class BookDaoImpl implements BookDao {
+    public BookDaoImpl(){
+      System.out.println( "book constructor is running ...");
+    }
+    public void save(){
+        System.out.println( "book dao save ..." );
+    }
+  }
+
+配置:
+  <bean id="bookDao" class="com.itheima.dao.impl.BookDaoImpl"/>
+
+注意：无参构造方法如果不存在，将抛出异常BeanCreationException
 
 
 
 
+实例化bean的三种方式——静态工厂(了解):
+
+静态工厂:
+  public class OrderDaoFactory {
+    public static OrderDao getOrderDao(){
+      return new OrderDaoImpl();
+    }
+  }
+配置
+  <bean id="orderDao" factory-method="getOrderDao" class="com.itheima.factory.OrderDaoFactory"/>
 
 
 
 
+实例化bean的三种方式——实例工厂(了解):
+
+实例工厂:
+  public class UserDaoFactory{
+    public userDao getUserDao(){
+      return new UserDaoImpl();
+    }
+  }
+
+配置:
+  <bean id="userDaoFactory" class="com.itheima.factory.UserDaoFactory" />
+  <bean id="userDao" factory-method="getUserDao" factory-bean="userDaoFactory"/>
 
 
 
 
+实例化bean的第四种方式——FactoryBean
 
+FactoryBean:
+  public class UserDaoFactoryBean implements FactoryBean<UserDao>{
+    public UserDao get0bject() throws Exception {
+      return new UserDaoImp1();
+    }
+    public class<?> getobjectType() {
+      return UserDao.class;
+    }
+  }
 
-
-
+配置:
+  <bean id="userDao" class="com.itheima.factory.UserDaoFactoryBean"/>
 
 
 
