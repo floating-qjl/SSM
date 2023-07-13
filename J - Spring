@@ -128,6 +128,16 @@ FactoryBean:
 
 
 
+bean生命周期:
+  生命周期: 从创建到消亡的完整过程
+  bean生命周期: bean从创建到销毁的整体过程
+  bean生命周期控制: 在bean创建后到销毁前做一些事情
+
+使用bean:
+  1.执行业务操作
+
+关闭/销毁容器:
+  1.执行bean销毁方法
 
 
 
@@ -135,11 +145,40 @@ FactoryBean:
 
 
 
+提供生命周期控制方法:
+  public class BookDaoImpl implements BookDao {
+    public void save(){
+      System.out.println( "book dao save ..." );
+    }
+    public void init(){
+    System.out.println( "book init ..." );
+    }
+    public void destory(){
+      System.out.println( "book destory ... " );
+    }
+}
+
+配置生命周期控制方法:
+  <bean id= "bookDao" class="com.itheima.dao.imp1.BookDaoImp1" init-method="init" destroy-method= "destroy">
 
 
 
 
+bean销毁时机:
 
+容器关闭前触发bean的销毁
+关闭容器方式:
+  手工关闭容器
+    ConfigurableApplicationContext接口close()操作
+  注册关闭钩子，在虚拟机退出前先关闭容器再退出虚拟机
+    ConfigurableApplicationContext接口registerShutdownHook()操作
+
+public class AppForLifecycle {
+  public static void main(String[] args){
+    ClassPathXmlApplicationContext ctx = new ClassPathxmlApplicationContext("applicationContext.xml");
+    ctx.close();
+  }
+}
 
 
 
