@@ -476,6 +476,93 @@ BeanFactory创建完毕后，所有的bean均为延迟加载
 
 
 
+纯注解开发：
+  Spring3.0开启了纯注解开发模式，使用Java类替代配置文件，开启了Spring快速开发赛道
+  Java类代替Spring核心配置文件，
+
+
+@Configuration
+@ComponentScan("com.itheima")
+public class SpringConfig{
+}
+
+
+注意：
+@Configuration注解用于设定当前类为配置类
+@ComponentScan注解用于设定扫描路径，此注解只能添加一次，多个数据请用数组格式
+
+例如：ComponentScan({com.itheima.service","com.itheima.dao"})
+
+
+
+读取Spring核心配置文件初始化容器对象切换为读取Java配置类初始化容器对象
+//加载配置文件初始化容器
+ApplicationContext ctx = new ClassPathXmlApplicationContext("applicationContext.xml");
+//加载配置类初始化容器
+ApplicationContext ctx = new AnnotationConfigApplicationContext(SpringConfig.class);
+
+
+
+
+使用@scope定义bean作用范围
+@Repository
+@Scope("singleton")
+public class BookDaoImpl implements BookDao {
+}
+
+
+
+使用@PostConstruct、@PreDestroy定义bean生命周期
+@Repository
+@Scope("singleton")
+public class BookDaoImpl implements BookDao {
+  public BookDaoImpl() {
+    System.out.println("book dag constructor ...");
+  }
+
+  @PostConstruct
+  public void init(){
+    System.out.println( "book init ..." );
+  }
+
+  @PreDestroy
+  public void destroy()i
+    System.out.print1n(" book destory ..." );
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
