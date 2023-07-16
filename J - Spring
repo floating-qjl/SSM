@@ -595,24 +595,68 @@ public class SpringConfig {
 
 使用@Bean配置第三方bean@Configuration
 public class SpringConfig {
-@Bean
-public DataSource dataSource(){
-DruidDataSource ds = new DruidDataSource( );ds.setDriverclassName( " com.mysql.jdbc.Driver" );ds.setUr1( "jdbc :mysql: //localhost: 3306/spring_db" );ds.setUsername( "root" );
-ds.setPassword( "root" );return ds;
+  @Bean
+  public DataSource dataSource(){
+    DruidDataSource ds = new DruidDataSource( );
+    ds.setDriverclassName("com.mysql.jdbc.Driver");
+    ds.setUr1("jdbc:mysql://localhost:3306/spring_db");
+    ds.setUsername("root");
+    ds.setPassword("root");
+    return ds;
+    }
 }
+
+
+
+使用独立的配置类管理第三方bean
+
+public class jdbcConfig{
+  public DataSource dataSource(){
+    DruidDataSource ds = new DruidDataSource( );
+    ds.setDriverclassName("com.mysql.jdbc.Driver");
+    ds.setUr1("jdbc:mysql://localhost:3306/spring_db");
+    ds.setUsername("root");
+    ds.setPassword("root");
+    return ds;
+    }
 }
 
 
 
+方式一:导入式
+public class JdbcConfig {
+  @Bean
+  public DataSource dataSource(){
+    DruidDataSource ds = new DruidDataSource();/相关配置
+    return ds;
+  }
+}
+
+使用@Import注解手动加入配置类到核心配置，此注解只能添加一次，多个数据请用数组格式
+
+@Configuration
+@Import(jdbcConfig.class)
+public class SpringConfig {
+}
 
 
 
+方式二︰扫描式（不推荐）
+@Configuration
+public class JdbcConfig {
+  @Bean
+  public DataSource dataSource(){
+    DruidDataSource ds = new DruidDataSource();//相关配置
+    return ds;
+  }
+}
 
+使用@ComponentScan注解扫描配置类所在的包，加载对应的配置类信息
 
-
-
-
-
+@Configuration
+@ComponentScan({"com.itheima.config","com.itheima.service","com.itheima.dao"})
+public class SpringConfig {
+}
 
 
 
