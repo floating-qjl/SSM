@@ -535,22 +535,72 @@ public class BookDaoImpl implements BookDao {
 
 
 
+依赖注入：
+
+使用@Autowired注解开启自动装配模式（按类型)
+@Service
+public class BookServiceImpl implements BookService {
+  @Autowired
+  private BookDao bookDao;
+  public void setBookDao ( BookDao bookDao) {
+    this.bookDao = bookDao;
+  }
+  public void save() {
+    System.out.println("book service save ..." );
+    bookDao.save();
+  }
+}
+
+注意∶自动装配基于反射设计创建对象并暴力反射对应属性为私有属性初始化数据，因此无需提供setter方法
+注意︰自动装配建议使用无参构造方法创建对象（默认），如果不提供对应构造方法，请提供唯一的构造方法
+
+
+
+
+使用@Qualifier注解开启指定名称装配bean@Service
+public class BookServiceImpl implements BookService {
+  @Autowired
+  @Qualifier("bookDao")
+  private BookDao bookDao;
+}
+
+注意:@Qualifier注解无法单独使用，必须配合@Autowired注解使用
+
+
+
+
+使用@Value实现简单类型注入
+@Repository("bookDao")
+public class BookDaoImpl implements BookDao {
+  @Value("100")
+  private string connectionNum;
+}
+
+
+
+使用@PropertySource注解加载properties文件
+@Configuration
+@ComponentScan("com.itheima")
+@PropertySource("classpath:jdbc.properties")
+public class SpringConfig {
+}
+
+注意∶路径仅支持单一文件配置，多文件请使用数组格式配置，不允许使用通配符*
 
 
 
 
 
+第三方bean管理：
 
-
-
-
-
-
-
-
-
-
-
+使用@Bean配置第三方bean@Configuration
+public class SpringConfig {
+@Bean
+public DataSource dataSource(){
+DruidDataSource ds = new DruidDataSource( );ds.setDriverclassName( " com.mysql.jdbc.Driver" );ds.setUr1( "jdbc :mysql: //localhost: 3306/spring_db" );ds.setUsername( "root" );
+ds.setPassword( "root" );return ds;
+}
+}
 
 
 
