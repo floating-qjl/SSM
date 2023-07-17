@@ -662,6 +662,109 @@ public class SpringConfig {
 
 
 
+第三方bean依赖注入:
+
+简单类型依赖注入
+public class JdbcConfig {
+  @Value("com.mysql.jdbc.Driver")
+  private string driver;
+  @Value("jdbc:mysql://localhost:3306/spring_db")
+  private String url;
+  @Value("root")
+  private String userName;
+  @Value("root")
+  private String password;
+  @Bean
+  public DataSource dataSource(){
+    DruidDataSource ds = new DruidDataSource();
+    ds.setDriverClassName(driver);
+    ds.setUrl(ur1);
+    ds.setUsername(userName);
+    ds.setPassword(userName);
+    return ds;
+  }
+}
+
+
+
+引用类型依赖注入
+@Bean
+public DataSource dataSource(BookService bookService){
+  System.out.println(bookService);
+  DruidDataSource ds = new DruidDataSource();//属性设置
+  return ds;
+}
+
+引用类型注入只需要为bean定义方法设置形参即可，容器会根据类型自动装配对象（按类型装配）
+
+
+
+
+
+
+
+
+Spring整合mybatis：
+
+public class MybatisConfig {
+    //定义bean，SqlSessionFactoryBean，用于产生SqlSessionFactory对象
+    @Bean
+    public SqlSessionFactoryBean sqlSessionFactory(DataSource dataSource){
+        SqlSessionFactoryBean ssfb = new SqlSessionFactoryBean();
+        ssfb.setTypeAliasesPackage("com.itheima.domain");
+        ssfb.setDataSource(dataSource);
+        return ssfb;
+    }
+
+    //定义bean，返回MapperScannerConfigurer对象
+    @Bean
+    public MapperScannerConfigurer mapperScannerConfigurer(){
+        MapperScannerConfigurer msc = new MapperScannerConfigurer();
+        msc.setBasePackage("com.itheima.dao");
+        return msc;
+    }
+}
+
+
+
+
+使用Spring整合Junit专用的类加载器：
+
+@Runwith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = SpringConfig.class)
+public class BookServiceTest {
+  @Autowired
+  private BookService bookService;
+
+  @Test
+  public void testSave(){
+    bookService.save();
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
