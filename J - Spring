@@ -994,6 +994,256 @@ AOP通知类型：
 
 
 
+测量业务层万次执行效率案例：
+
+@Around("projectAdvice.servicePt()")
+public void runSpeed(ProceedingJoinPoint pjp) throws Throwable {
+  //获取执行签名信息
+  Signature signature = pjp.getsignature();
+  //通过签名获取执行类型(接口名)
+  String className = signature.getDeclaringTypeName();
+  //通过签名获取执行操作名称(方法名)
+  String methodName = signature.getName( );
+  long start = System.currentTimeMillis();
+  for (int i = 0; i < 10000; i++) {
+    pjp.proceed();
+  }
+  long end = System.currentTimeMillis();
+  System.out.println("万次执行: "+className+" . " +methodName+" --->"+(end-start)+"ms");
+}
+
+
+
+
+
+
+
+AOP通知获取数据:
+
+获取切入点方法的参数
+  JoinPoint :适用于前置、后置、返回后、抛出异常后通知
+  ProceedJointPoint:适用于环绕通知
+获取切入点方法返回值
+  返回后通知
+  环绕通知
+获取切入点方法运行异常信息
+  抛出异常后通知
+  环绕通知
+
+
+
+
+
+AOP通知获取参数数据：
+
+JoinPoint对象描述了连接点方法的运行状态，可以获取到原始方法的调用参数
+  @Before("pt()")
+  public void before(JoinPoint jp) {
+    Object[] args = jp.getArgs();
+    System.out.println(Arrays.toString(args));
+  }
+
+ProceedJointPoint是JoinPoint的子类
+  @Around("pt()")
+  public Object around(ProceedingJoinPoint pjp) throws Throwable {
+    Object[] args = pjp.getArgs();
+    System.out.println(Arrays.toString(args));
+    Object ret = pjp.proceed();  
+    return ret;
+  }
+
+
+
+
+
+AOP通知获取返回值数据:
+
+抛出异常后通知可以获取切入点方法中出现的异常信息，使用形参可以接收对应的异常对象
+  @AfterReturning(value = "pt()" ,returning = "ret")
+  public void afterReturning(String ret){
+    System.out.println( "afterReturning advice ... "+ret);
+  }
+
+环绕通知中可以手工书写对原始方法的调用，得到的结果即为原始方法的返回值
+  @Around("pt()")
+  public object around(ProceedingJoinPoinit pjp) throws Throwable {
+    Object ret = pjp.proceed();
+    return ret;
+  }
+
+
+
+
+AOP通知获取异常数据（了解):
+
+抛出异常后通知可以获取切入点方法中出现的异常信息，使用形参可以接收对应的异常对象
+  @AfterThrowing(value = "pt()" ,throwing = “t")
+  public void afterThrowing (Throwable t) {
+    System.out.println( "afterThrowing advice ..."+ t);
+  }
+
+抛出异常后通知可以获取切入点方法运行的异常信息，使用形参可以接收运行时抛出的异常对象
+  @Around("pt()")
+  public object around( ProceedingJoinPoint pjp){
+    Object ret = null;
+    try {
+      ret = pjp.proceed();
+    }catch (Throwable t) {
+      t.printStackTrace();
+    }
+    return ret;
+  }
+
+
+
+
+
+解决密码兼容性案例（去掉空格）：
+
+@Around("DataAdvice.servicePt()")
+public object trimString(ProceedingJoinPoint pjp) throws Throwable {
+  Object[] args = pjp.getArgs();
+  //对原始参数的每一个参数进行操作
+  for (int i = 0; i < args.length; i++) {
+    //如果是字符串数据
+    if(args[i].getclass().equals(String.class)){
+      //取出数据，trim()操作后，更新数据
+      args[i] = args[i].toString().trim();
+    }
+  }
+  return pjp.proceed(args);
+}
+
+
+
+
+
+
+
+
+
+Spring事务简介:
+
+事务作用: 在数据层保障一系列的数据库操作同成功同失败
+Spring事务作用: 在数据层或业务层保障一系列的数据库操作同成功同失败
+
+public interface PlatformTransactionManager{
+  void commit(Transactionstatus status) throws TransactionException;
+  void rollback(TransactionStatus status) throws TransactionException;
+}
+
+public class DataSourceTransactionManager {
+}
+
+
+
+事务管理步骤：
+1. 在业务层接口上添加Spring事务管理
+    public interface AccountService {
+      @Transactional
+      public void transfer(String out,string in ,Double money) ;
+    }
+
+注意事项：
+  Spring注解式事务通常添加在业务层接口中而不会添加到业务层实现类中，降低耦合
+  注解式事务可以添加到业务方法上表示当前方法开启事务，也可以添加到接口上表示当前接口所有方法开启事务
+
+2. 设置事务管理器（在springConfig类中）
+    @Bean
+    public PlatformTransactionManager transactionManager(DataSource dataSource){
+      DataSourceTransactionManager ptm = new DataSourceTransactionManager();ptm.setDataSource(dataSource) ;
+      return ptm;
+    }
+
+3. 开启注解式事务驱动
+    @Configuration
+    @ComponentScan("com.itheima")
+    @PropertySource("classpath:jdbc.properties")
+    @Import({JdbcConfig.class,MybatisConfig.class})
+    @EnableTransactionManagement
+
+    public class SpringConfig{
+    }
+
+
+
+
+
+Spring事务角色
+
+事务角色:
+  事务管理员: 发起事务方，在Spring中通常指代业务层开启事务的方法
+  事务协调员: 加入事务方，在Spring中通常指代数据层方法，也可以是业务层方法
+
+
+注意：事务管理器中注入的dataSource与sqlSessionFactory中注入的dataSource是一样的
+
+
+
+
+事务相关配置：
+
+属性                          作用                           示例
+readonly                设置是否为只读事务           readonly=true只读事务
+timeout                 设置事务超时时间             timeout = -1(永不超时)
+ro1lbackFor             设置事务回滚异常(class)      rollbackFor = {NullPointException.class}
+rollbackForClassName    设置事务回滚异常(String)     同上格式为字符串
+noRollbackFor           设置事务不回滚异常(class)    noRollbackFor = {NullPointException.class}
+noRollbackForClassName  设置事务不回滚异常(String)   同上格式为字符串
+propagation             设置事务传播行为             ...
+
+
+
+
+事务传播行为: 事务协调员对事务管理员所携带事务的处理态度
+
+
+
+在业务层接口上添加Spring事务，设置事务传播行为REQUIRES_NEW（需要新事务)
+  @Service
+  public class LogServiceImpl implements LogService {
+    @Autowired
+    private LogDao logDao;
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void log(String out,String in,Double money ) {
+      logDao.log("转账操作由"+out+"到"+in+",金额: "+money) ;
+    }
+  }
+
+
+
+
+传播属性                        事务管理员                              事务协调员
+REQUIRED(默认)                    开启T                                   加入T
+                                    无                                    新建T2
+REQUIRES_ NEW                     开启T                                   新建T2
+                                    无                                    新建T2
+SUPPORTS                          开启T                                   加入T
+                                    无                                      无
+NOT_SUPPORTED                     开启T                                     无
+                                    无                                      无
+MANDATORY                         开启T                                   加入T
+                                    无                                    ERROR
+NEVER                             开启T                                   ERROR
+                                    无                                      无
+NESTED                  设置savePoint,一旦事务回滚，事务将回滚到savePoint处，交由客户响应提交/回滚
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
