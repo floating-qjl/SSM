@@ -1,0 +1,391 @@
+SpringMVc概述:
+  SpringMVC技术与Servlet技术功能等同，均属于web层开发技术
+  SpringMVC是一种基于Java实现MVC模型的轻量级web框架
+
+优点:
+  使用简单，开发便捷(相比于Servlet)
+
+
+
+
+
+入门：
+
+
+使用SpringMVC技术需要先导入SpringMVC坐标与Servlet坐标:
+
+<dependency>
+  <groupId>javax.servlet</groupId>
+  <artifactId>javax.servlet-api</artifactId>
+  <version>3.1.0</version>
+  <scope>provided</scope>
+</dependency>
+
+<dependency>
+  <groupId>org.springframework</groupId>
+  <artifactId>spring-webmvc</artifactId>
+  <version>5.2.10.RELEASE</version>
+</dependency>
+
+
+创建SpringMVC控制器类(等同于Servlet功能)
+
+@Controller
+public class UserController {
+  @RequestMapping("/save")
+  @ResponseBody
+  public String save(){
+    System.out.print1n("user save ...");
+    return "{'info':'springmvc'}";
+  }
+}
+
+
+初始化SpringMVC环境(同Spring环境)，设定SpringMVC加载对应的bean
+
+@Configuration
+@Componentscan("com.itheima.controller")
+public class SpringMvcConfig {
+}
+
+
+
+初始化Servlet容器，加载SpringMVC环境，并设置SpringMVC技术处理的请求
+
+public class ServletContainersInitConfig extends AbstractDispatcherServletInitializer {
+ 
+  //加载springMVC容器配置
+  protected webApplicationContext createServletApplicationContext() {
+    AnnotationConfigwebApplicationContext ctx = new AnnotationConfigwebApplicationContext();
+    ctx.register(SpringMvcConfig.class);
+    return ctx;
+}
+
+  //设置哪些请求归属springMVC处理
+  protected String[] getServletMappings() {
+    return new String[]{"/"}; //代表所有请求
+  }
+
+  //加载spring容器配置
+  protected WebApplicationContext createRootApplicationContext() {
+    return null;
+  }
+}
+
+
+
+
+
+
+名称: @Controller
+类型: 类注解
+位置: SpringMVC控制器类定义上方
+作用: 设定SpringMVC的核心控制器bean
+范例:
+  @Controller
+  public class UserController {
+  }
+
+
+
+
+名称: @RequestMapping
+类型: 方法注解
+位置: SpringMVC控制器方法定义上方
+作用: 设置当前控制器方法请求访问路径
+范例:
+  @RequestMapping("/save")
+  public void save(){
+    System.out.println("user save ...");
+  }
+
+相关属性:
+  value(默认): 请求访问路径
+
+
+
+
+名称: @ResponseBody
+类型: 方法注解
+位置: SpringMNC控制器方法定义上方
+作用: 设置当前控制器方法响应内容为当前返回值，无需解析
+范例:
+  @RequestMapping("/save")
+  @ResponseBody
+  public String save(){
+    System.out.println("user save ...");
+    return "{'info':'springmvc'}";
+  }
+
+
+
+
+因为功能不同，如何避免spring错误的加载到SpringMVc的bean
+  ——加载spring控制的bean的时候排除掉SpringMVC控制的bean
+
+
+
+
+Spring相关bean加载控制:
+
+  方式一: Spring加载的bean设定扫描范围为com.itheima，排除掉controller包内的bean
+  方式二: Spring加载的bean设定扫描范围为精准范围，例如service包、dao包等
+  方式三: 不区分Spring与springMVC的环境，加载到同一个环境中
+
+
+
+
+名称: @ComponentScan
+类型: 类注解
+范例:
+  @Configuration
+  @ComponentScan(value = "com.itheima" ,
+                 excludeFilters = @ComponentScan.Filter(
+                 type = FilterType .ANNOTATION,
+                 classes = Controller.class
+                )
+  public class SpringConfig {
+  }
+
+属性:
+  excludeFilters: 排除扫描路径中加载的bean，需要指定类别(type)与具体项(classes)
+  includeFilters: 加载指定的bean，需要指定类别(type)与具体项(classes)
+
+
+
+public class ServletContainersInitConfig extends AbstractDispatcherServletInitializer {
+ 
+  //加载SpringMVC容器配置
+  protected webApplicationContext createServletApplicationContext() {
+    AnnotationConfigwebApplicationContext ctx = new AnnotationConfigwebApplicationContext();
+    ctx.register(SpringMvcConfig.class);
+    return ctx;
+}
+
+  //加载Spring容器配置
+  protected String[] getServletMappings() {
+    AnnotationConfigwebApplicationContext ctx = new AnnotationConfigwebApplicationContext();
+    ctx.register(SpringConfig.class);
+    return ctx;
+  }
+
+  //加载Spring容器配置
+  protected WebApplicationContext createRootApplicationContext() {
+    return null;
+  }
+}
+
+
+
+
+简化开发：
+
+  public class ServletContainersInitConfig extends AbstractAnnotationConfigDispatcherServletInitializer{
+    protected class<?>[] getservletconfigclasses() {
+      return new Class[]{SpringMvcConfig.class};
+    }
+
+    protected class<?>[] getRootConfigClasses() {
+      return new Class[]{SpringConfig.class};
+    }
+
+    protected string[] getervletMappings() {
+      return new String[]{"/"};
+    }
+
+}
+
+
+
+
+
+
+PostMan简介：
+
+Postman是一款功能强大的网页调试与发送网页HTTP请求的Chrome插件
+作用: 常用于进行接口测试
+特征：
+  简单
+  实用
+  美观
+  大方
+
+
+
+PostMan基本使用：
+
+  注册登录
+  创建工作空间/进入工作空间
+  发起请求测试结果
+
+
+
+
+名称: @RequestMapping
+类型: 方法注解类注解
+位置: SpringMVC控制器方法定义上方
+作用: 设置当前控制器方法请求访问路径，如果设置在类上统一设置当前控制器方法请求访问路径前缀
+范例:
+  @Controller
+  @RequestMapping("/user")
+  public class UserController {
+    @RequestMapping("/save")
+    @ResponseBody
+    public String save(){
+      System.out.println("user save ...");
+      return "{'module':'user save'}";
+    }
+
+属性:
+  value(默认): 请求访问路径，或访问路径前缀
+
+
+
+
+
+请求与相应：
+
+Get请求传参
+  普通参数: url地址传参，地址参数名与形参变量名相同，定义形参即可接收参数
+
+@RequestMapping("/commonParam")
+@ResponseBody
+public string commonParam( String name ,int age){
+  System.out.println("普通参数传递name ==> "+name);
+  System.out.println("普通参数传递age ==> "+age);
+  return "{'module':'common param'}";
+}
+
+
+
+Post请求参数
+  普通参数: form表单post请求传参，表单参数名与形参变量名相同，定义形参即可接收参数
+
+接受代码与get请求一样
+
+
+
+
+
+Post请求中文乱码处理：
+
+为web容器添加过滤器并指定字符集，Spring-web包中提供了专用的字符过滤器(在SpringMvc容器配置中直接添加)：
+  public class ServletContainersInitConfig extends AbstractAnnotationConfigDispatcherServletInitializer{
+    //配字符编码过滤器
+    protected Filter[] getServletFilters() {
+      CharacterEncodingFilter filter = new CharacterEncodingFilter();
+      filter.setEncoding("utf-8");
+      return new Filter[]{filter};
+    }
+}
+
+
+
+
+请求参数
+
+
+普通参数: url地址传参，地址参数名与形参变量名相同，定义形参即可接收参数
+  @RequestMapping("/commonParam")
+  @ResponseBody
+  public string commonParam(String name ,int age){
+    System.out.println("普通参数传递name ==>"+name );
+    System.out.println("普通参数传递age ==> "+age);
+    return "{'module':'common param'}";
+  }
+
+
+普通参数: 请求参数名与形参变量名不同，使用@RequestParam绑定参数关系
+  @RequestMapping("/commonParamDifferentName")
+  @ResponseBody
+  public String commonParamDifferentName(@RequestParam("name")String userName , int age){
+    System.out.println("普通参数传递userName ==> "+userName);
+    System.out.println("普通参数传递age ==> "+age );
+    return "{'module':'common param different name'}";
+  }
+
+
+名称: @RequestParam
+类型: 形参注解
+位置: SpringMVC控制器方法形参定义前面
+作用: 绑定请求参数与处理器方法形参间的关系
+参数:
+  required: 是否为必传参数
+  defaultValue: 参数默认值
+
+
+
+PoJ0参数: 请求参数名与形参对象属性名相同，定义PoJo类型形参即可接收参数
+  @RequestMapping("/pojoParam")
+  @ResponseBody
+  public string pojoParam(User user){
+    System.out.println("pojo参数传递user ==> "+user);
+    return "{'module':'pojo param'}";
+  }
+
+
+嵌套POJ0参数: 请求参数名与形参对象属性名相同，按照对象层次结构关系即可接收嵌套POJo属性参数
+  @RequestMapping("/pojocontainPojoParam")
+  @ResponseBody
+  public String pojoContainPojoParam(User user){
+    System.out.println("pojo嵌套pojo参数传递user ==> "+user);
+    return "{'module':'pojo contain pojo param'}";
+  }
+
+
+数组参数: 请求参数名与形参对象属性名相同且请求参数为多个，定义数组类型形参即可接收参数
+  @RequestMapping("/arrayParam")
+  @ResponseBody
+  public String arrayParam(String[] likes){
+    System.out.println("数组参数传递likes ==> "+ Arrays.toString(likes));
+    return "{'module':'array param'}";
+  }
+
+
+集合保存普通参数: 请求参数名与形参集合对象名相同且请求参数为多个，@RequestParam绑定参数关系
+  @RequestMapping("/listParam")
+  @ResponseBody
+  public String listParam(@RequestParam List<String> likes){
+    System.out.println("集合参数传递likes ==> "+ likes );
+    return "{'module':'list param'}";
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
