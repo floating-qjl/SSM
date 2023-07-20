@@ -352,24 +352,64 @@ PoJ0参数: 请求参数名与形参对象属性名相同，定义PoJo类型形�
 
 
 
+请求参数（传递json数据):
+  json数组
+  json对象(POJO)
+  json数组(PO30)
 
 
 
 
+添加json数据转换相关坐标：
+  <dependency>
+    <groupId>com.fasterxml.jackson.core</groupId>
+    <artifactId>jackson-databind</artifactId>
+    <version>2.9.0</version>
+  </dependency>
+
+
+
+设置发送json数据（请求body中添加json数据)
+
+
+
+开启自动转换json数据的支持:
+  @Configuration
+  @ComponentScan("com.itheima.controller")
+  @EnablewebMvc
+  public class SpringMvcConfig {}
+
+
+注意事项: @EnablewebMvc注解功能强大，该注解整合了多个功能，此处仅使用其中一部分功能，即json数据进行自动类型转换
+
+
+
+设置接收json数据
+  @RequestMapping("/listParamForJson")
+  @ResponseBody
+  public string listParamForJson(@RequestBody List<String> likes){
+    System.out.println("list common(json)参数传递list ==>"+likes);
+    return "{'module':'ist common for json param"}”;
+  }
+
+
+名称: @RequestBody
+类型: 形参注解
+立置: SpringMVC控制器方法形参定义前面
+作用: 将请求中请求体所包含的数据传递给请求参数，此注解一个处理器方法只能使用一次
 
 
 
 
+@RequestBody与@RequestParam区别
 
+区别:
+  @RequestParam用于接收url地址传参，表单传参【application/x-www-form-urlencoded】
+  @RequestBody用于接收json数据【application/json】
 
-
-
-
-
-
-
-
-
+应用:
+  后期开发中，发送json格式数据为主，@RequestBody应用较广
+  如果发送非json格式数据，选用@RequestParam接收请求参数
 
 
 
