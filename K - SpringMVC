@@ -577,35 +577,256 @@ Restful快速开发：
 
 
 
+表现层数据封装
+  前端接收数据格式——封装特殊消息到message(msg)属性中
+
+
+设置统一数据返回结果类
+public class Result {
+  private Object data;
+  private Integer code;
+  private String msg;
+}
+
+
+注意事项:
+  Result类中的字段并不是固定的，可以根据需要自行增减提供若干个构造方法，方便操作
+
+
+
+设置统─数据返回结果编码
+
+public class code {
+  public static final Integer SAVE_OK = 20011;
+  public static final Integer DELETE_OK = 20021;
+  public static final Integer UPDATE_OK = 20031;
+  public static final Integer GET_OK = 20041;
+
+  public static final Integer SAVE_ERR = 20010;
+  public static final Integer DELETE_ERR = 20020;
+  public static final Integer UPDATE_ERR = 20030;
+  public static final Integer GET_ERR = 20040;
+}
+
+注意事项:
+  Code类的常量设计也不是固定的，可以根据需要自行增减，例如将查询再进行细分为GET_OK，GET_ALL_OK，GET_PAGE_OK
+
+
+
+
+
+异常处理器
+  程序开发过程中不可避免的会遇到异常现象
+
+
+出现异常现象的常见位置与常见诱因如下:
+  框架内部抛出的异常: 因使用不合规导致
+  数据层抛出的异常: 因外部服务器故障导致（例如:服务器访问超时)
+  业务层抛出的异常: 因业务逻辑书写错误导致（例如:遍历业务书写操作，导致索引异常等)
+  表现层抛出的异常: 因数据收集、校验等规则导致（例如:不匹配的数据类型间导致异常)
+  工具类抛出的异常: 因工具类书写不严谨不够健壮导致（例如:必要释放的连接长期未释放等)
+
+
+各个层级均出现异常，异常处理代码书写在哪一层?
+  所有的异常均抛出到表现层进行处理
+
+
+表现层处理异常，每个方法中单独书写，代码书写量巨大且意义不强，如何解决?
+  AOP思想
+
+
+
+异常处理器
+  集中的、统一的处理项目中出现的异常
+
+@RestControllerAdvice
+public class ProjectExceptionAdvice {
+  @ExceptionHandler(Exception.class)
+  public Result doException(Exception ex){
+    return new Result(666,null);
+  }
+}
+
+
+
+名称: @ExceptionHandler
+类型: 方法注解
+位置: 专用于异常处理的控制器方法上方
+作用: 设置指定异常的处理方案，功能等同于控制器方法，出现异常后终止原始控制器执行，并转入当前方法执行
+
+说明:
+  此类方法可以根据处理的异常不同，制作多个方法分别处理对应的异常
+
+
+
+
+项目异常处理方案:
+
+项目异常分类
+  业务异常(BusinessException)
+    规范的用户行为产生的异常
+    不规范的用户行为操作产生的异常
+  系统异常(SystemException)
+    项目运行过程中可预计且无法避免的异常
+  其他异常(Exception)
+    编程人员未预期到的异常
 
 
 
 
 
 
+项目异常处理方案
+  业务异常(BusinessException)
+    发送对应消息传递给用户，提醒规范操作
+  系统异常(SystemException)
+    发送固定消息传递给用户，安抚用户
+    发送特定消息给运维人员，提醒维护
+    记录日志
+  其他异常(Exception)
+    发送固定消息传递给用户，安抚用户
+    发送特定消息给编程人员，提醒维护(纳入预期范围内)
+    记录日志
+
+
+处理步骤：
+  自定义项目系统级异常
+  自定义项目业务级异常
+  自定义异常编码(持续补充)
+  触发自定义异常
+  拦截并处理异常
+
+
+
+拦截器概念:
+  拦截器(Interceptor)是一种动态拦截方法调用的机制
+作用:
+  在指定的方法调用前后执行预先设定后的的代码
+  阻止原始方法的执行
+
+
+
+拦截器与过滤器区别:
+  归属不同: Filter属于servlet技术，Interceptor属于SpringMVC技术
+  拦截内容不同: Filter对所有访问进行增强，Interceptor仅针对SpringMNC的访问进行增强
+
+
+
+案例：
+
+1. 声明拦截器的bean，并实现HandlerInterceptor接口(注意:扫描加载bean)
+  @Component
+  public class ProjectInterceptor implements HandlerInterceptor {
+    public boolean preHandle(..) throws Exception {
+      System.out.println( "preHandle. . . " );
+      return true;//选择false则会终止原始操作
+    }
+    public void postHandle(..) throws Exception {
+      System.out.println( "postHandle. . . " );
+    }
+    public void afterCompletion(..) throws Exception {
+      System.out.println( "afterCompletion. . . " );
+    }
+  }
+
+
+2. 定义配置类，继承webMvcConfigurationSupport，实现addInterceptor方法（注意:扫描加载配置)
+  @Configuration
+  public class SpringMvcSupport extends webMvcConfigurationSupport {
+    @Override
+    public void addInterceptors ( InterceptorRegistry registry) {
+      ..
+    }
+  }
+
+
+3. 添加拦截器并设定拦截的访问路径，路径可以通过可变参数设置多个
+  @Configuration
+  public class SpringMvcSupport extends webMvcConfigurationSupport {
+    @Autowired
+    private ProjectInterceptor projectInterceptor;
+    @Override
+    public void addInterceptors( InterceptorRegistry registry) {
+      registry.addInterceptor(projectInterceptor).addPathPatterns("/books");
+    }
+  }
+
+
+
+
+简化：
+
+使用标准接口webMvcConfigurer简化开发（注意:侵入式较强)
+  @Configuration
+  @ComponentScan("com.itheima.controller")
+  @EnablewebMvc
+  public class SpringMvcConfig implements webMvcConfigurer{
+    @Autowired
+    private ProjectInterceptor projectInterceptor;
+    public void addInterceptors (InterceptorRegistry registry) {
+      registry.addInterceptor(projectInterceptor ).addPathPatterns( "/books", "/books/*");
+    }
+  }
+
+
+
+
+拦截器参数
+
+前置处理
+  public boolean preHandle(HttpServletRequest request,
+                           HttpServletResponse response,
+                           object handler) throws Exception {
+    System.out.println( "preHandle..." );
+    return true;
+  }
+
+参数
+  request: 请求对象
+  response: 响应对象
+  handler: 被调用的处理器对象，本质上是一个方法对象，对反射技术中的Method对象进行了再包装
+
+返回值
+  返回值为false，被拦截的处理器将不执行
+
+
+
+
+后置处理
+  public void postHandle(HttpServletRequest request,
+                         HttpServletResponse response,
+                         object handler,
+                         ModelAndView modelAndView) throws Exception {
+    System.out.println( "postHandle. . . " );
+  }
+
+参数
+  modelAndView: 如果处理器执行完成具有返回结果，可以读取到对应数据与页面信息，并进行调整
 
 
 
 
 
+完成后处理
+  public void afterCompletion(HttpServletRequest request,
+                              HttpServletResponse response,
+                              object handler,
+                              Exception ex) throws Exception {
+    System.out.println( "afterCompletion.. . " );
+  }
+
+参数
+  ex: 如果处理器执行过程中出现异常对象，可以针对异常情况进行单独处理
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+多拦截器执行顺序:
+  当配置多个拦截器时，形成拦截器链
+  拦截器链的运行顺序参照拦截器添加顺序为准
+  当拦截器中出现对原始处理器的拦截，后面的拦截器均终止运行
+  当拦截器运行中断，仅运行配置在前面的拦截器的afterCompletion操作
 
 
 
