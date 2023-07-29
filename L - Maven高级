@@ -378,10 +378,27 @@ Nexus
 
 
 
+Nexus安装与启动
+
+启动服务器（命令行启动)
+  nexus.exe /run nexus
+访问服务器（默认端口:8081)
+  http://localhost:8081
+
+修改基础配置信息
+  安装路径下etc目录中nexus-default.properties文件保存有nexus基础配置信息，例如默认访问端口
+修改服务器运行配置信息
+  安装路径下bin目录中nexus.vmoptions文件保存有nexus服务器启动对应的配置信息，例如默认占用内存空间
 
 
 
 
+私服仓库分类
+
+仓库类别           英文名称            功能                   关联操作
+宿主仓库            hosted        保存自主研发+第三方资源       上传
+代理仓库            proxy         代理连接中央仓库             下载
+仓库组              group         为仓库编组简化下载操作        下载
 
 
 
