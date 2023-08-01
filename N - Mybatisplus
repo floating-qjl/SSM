@@ -318,6 +318,113 @@ mybatis-plus:
 
 
 
+乐观锁:
+  1. 数据库表中添加锁标记字段
+  2. 实体类中添加对应字段，并设定当前字段为逻辑删除标记字段
+    public class User {
+      private Long id;
+      @Version
+      private integer version;
+    }
+
+3. 配置乐观锁拦截器实现锁机制对应的动态SQL语句拼装
+    @Configuration
+    public class MpConfig {
+      @Bean
+      public MybatisPlusInterceptor mpInterceptor() {
+        MybatisPlusInterceptor mpInterceptor = new MybatisPlusInterceptor();
+        mpInterceptor.addInnerInterceptor(new OptimisticLockerInnerInterceptor());
+        return mpInterceptor;
+      }
+    }
+
+4. 使用乐观锁机制在修改前必须先获取到对应数据的verion方可正常进行
+    @Test
+    void testUpdate(){
+      //先查询数据，获取到version数据
+      User user = userDao.selectById(1L);
+      //执行数据修改操作
+      user.setName( "Tom and Jerry" );
+      userDao.updateById(user);
+    }
+
+执行修改前先执行查询语句:
+  SELECT id ,name, age,tel,deleted, version FROM tbl_user WHERE id=?
+
+执行修改时使用version字段作为乐观锁检查依据:
+  UPDATE tbl_user SET name=?, age=?, tel=?, version=? WHERE id=? AND version=?
+
+
+
+
+
+代码生成器
+
+<dependency>
+  <groupId>com.baomidou</groupId>
+  <artifactId>mybatis-plus-generator</artifactId>
+  <version>3.4.1</version>
+</dependency>
+
+<dependency>
+  <groupId>org.apache.velocity</groupId>
+  <artifactId>velocity-engine-core</artifactId>
+  <version>2.3</version>
+</dependency>
+
+
+
+
+  //创建代码生成器对象，执行生成代码操作
+  AutoGenerator autoGenerator = new AutoGenerator();
+  autoGenerator.execute();
+
+
+
+
+  //数据源相关配置:读取数枵库中的信息，根据数据库表结构生成代码DataSourceconfig dataSourceConfig = new DataSourceConfig();
+  dataSourceConfig.setUrl("jdbc:mysql://localhost:3306/mybatisplus_db?serverTimezone=UTC" );
+  dataSourceConfig.setDriverName( "com.mysql.cj.jdbc.Driver" );
+  datasourceConfig.setUsername( "root" );
+  dataSourceConfig.setPassword( "root" );
+  autoGenerator.setDataSource(dataSourceConfig);
+
+
+
+  //设置全局配置
+  GlobalConfig globalConfig = new GlobalConfig();
+  globalConfig.setOutputDir(System.getProperty( "user.dir" )+"/mybatisplus_04_generator/src/main/java"); //设置输出目录
+  globalConfig.setOpen(false);//设置运行完成后是否打开所在目录
+  globalConfig.setAuthor("黑马程序员");//设置作者
+  globalconfig.setFileOverride(true);//设置是否新生成覆盖旧文件
+  globalConfig.setMapperName( "%sDao" );//设置Mapper文件名字格式
+  globalconfig.setIdType(IdType.ASSIGN_ID);//设置ID类型
+  autoGenerator.setGlobalConfig(globalConfig);
+
+
+
+  //包相关配置
+  PackageConfig packageInfo = new PackageConfig();
+  packageInfo.setParent( "com.itheima" ) ;//设置包名
+  packageInfo.setEntity( "domain" );//设置实体类名
+  packageInfo.setMapper( "dao" ) ;//设置映射类名
+  autoGenerator.setPackageInfo(packageInfo);
+
+
+
+  //策略配置
+  strategyConfig strategy = new StrategyConfig();
+  strategy.setInclude( "tbl_user" );//设置创建的实体类包含数据库内哪几个表
+  strategy.setTablePrefix( "tbl_");//设置实体类名格式（排除tbl_）
+  strategy.setRestcontrollerstyle(true);//设置是否开启Restcontroller格式
+  strategy.setEntityLombokModel(true);//设置Lombok格式是否开启
+  strategy.setLogicDeleteFieldName( "deleted" );//设置逻辑删除
+  strategy.setVersionFieldName( "version" ) ;//设置乐观锁
+  autoGenerator. setstrategy( strategy);
+
+
+
+
 
 
 
